@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name of the Deployment bucket
+    Default: birthdaybot-artifacts
+
+Resources:
+  DeploymentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      BucketName: !Ref BucketName
+
+Outputs:
+  DeploymentBucketName:
+    Value: !Ref DeploymentBucket
+    Description: Name of the Deployment Bucket

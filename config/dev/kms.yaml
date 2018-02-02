@@ -1,0 +1,5 @@
+template_path: templates/kms.yaml
+
+parameters:
+  Name: coffeebot
+  Description: Coffeebot encryption key

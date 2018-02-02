@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  Name:
+    Type: String
+    Description: KMS Key Alias Name
+  Description:
+    Type: String
+    Description: KMS Key Description
+
+Resources:
+  KmsAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Join ["", ["alias/", !Ref Name]]
+      TargetKeyId: !Ref KmsKey
+
+  KmsKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      Description: !Ref Description
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: "Allow"
+          Principal:
+            AWS:
+              - Fn::Sub:
+                  - "arn:aws:iam::${AWS::AccountId}:root"
+                  - {}
+          Action:
+            - "kms:*"
+          Resource: "*"
+
+Outputs:
+  KmsKeyArn:
+    Description: KMS Key Arn
+    Value: !GetAtt KmsKey.Arn
+  KmsKeyAlias:
+    Description: Alias of the KMS Key
+    Value: !Ref Name
+

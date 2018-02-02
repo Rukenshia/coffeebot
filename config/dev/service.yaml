@@ -1,0 +1,16 @@
+template_path: templates/service.yaml
+
+hooks:
+  before_create:
+    - !cmd "cd lambdas/coffeebot && make artifact"
+  before_update:
+    - !cmd "cd lambdas/coffeebot && make artifact"
+
+parameters:
+  ArtifactBucket: !stack_output deployment::DeploymentBucketName
+  CoffeebotArtifact: coffeebot/lambda.zip
+  CoffeebotKmsKeyArn: !stack_output kms::KmsKeyArn
+
+  RocketChatUrl: {{var.rocket_chat.url}}
+  RocketChatUsername: {{var.rocket_chat.username}}
+  RocketChatPassword: {{var.rocket_chat.password}}

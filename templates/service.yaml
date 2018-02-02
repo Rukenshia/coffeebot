@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ArtifactBucket:
+    Type: String
+    Description: Name of the bucket for the lambda artifacts
+  CoffeebotArtifact:
+    Type: String
+    Description: Path to the Coffeebot lambda artifact
+  CoffeebotKmsKeyArn:
+    Type: String
+    Description: ARN for the KMS Key used for Lambda Environment
+  RocketChatUrl:
+    Type: String
+    Description: URL to the Rocket.Chat instance
+  RocketChatUsername:
+    Type: String
+    Description: Username to the Rocket.Chat instance
+  RocketChatPassword:
+    Type: String
+    Description: Password to the Rocket.Chat instance
+
+Resources:
+  CoffeebotLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: AllowCloudwatchPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:*
+            Resource: arn:aws:logs:*:*:*
+      - PolicyName: AllowKmsDecrypt
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - kms:Decrypt
+            Resource: !Ref CoffeebotKmsKeyArn
+
+  Coffeebot:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: "main"
+      FunctionName: Coffeebot
+      Role: !GetAtt CoffeebotLambdaRole.Arn
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Ref CoffeebotArtifact
+      Runtime: "go1.x"
+      Environment:
+        Variables:
+          RocketChatUrl: !Ref RocketChatUrl
+          RocketChatUsername: !Ref RocketChatUsername
+          RocketChatPassword: !Ref RocketChatPassword
+
+  CoffeebotEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: CoffeebotEvent
+      Description: Coffeebot Event Trigger
+      ScheduleExpression: "cron(0 8 ? * MON *)"
+      Targets:
+      - Arn: !GetAtt Coffeebot.Arn
+        Id: CoffeebotTarget1
+
+  CoffeebotEventInvocationPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref Coffeebot
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt CoffeebotEvent.Arn

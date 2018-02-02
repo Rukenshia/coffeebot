@@ -1,0 +1,4 @@
+template_path: templates/deployment.yaml
+
+parameters:
+  BucketName: coffeebot-artifacts
