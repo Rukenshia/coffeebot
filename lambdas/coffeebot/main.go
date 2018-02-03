@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"strings"
@@ -65,21 +64,14 @@ func Handler(event events.CloudWatchEvent) (interface{}, error) {
 		pairings = pairings[1:]
 	}
 
-	for _, user := range users {
-		if user.Username == "jan" {
-			pa := pairings[0 : len(pairings)/2]
-			pb := pairings[len(pairings)/2:]
+	pa := pairings[0 : len(pairings)/2]
+	pb := pairings[len(pairings)/2:]
+	for idx, first := range pa {
+		firstUser := users[first]
+		secondUser := users[pb[idx]]
 
-			var msgs []string
-			for idx := range pa {
-				msgs = append(msgs, fmt.Sprintf("%s with %s", users[pa[idx]].Username, users[pb[idx]].Username))
-			}
-
-			rlog.Debugf("%v", rc.Chat.PostMessage(rocketchat.Message{
-				Emoji:   ":coffee:",
-				Channel: fmt.Sprintf("@%s", user.Username),
-				Text:    strings.Join(msgs, "\n"),
-			}))
+		if firstUser.Username == "jan" || secondUser.Username == "jan" {
+			SendCoffeeInvitation(rc, firstUser, secondUser)
 		}
 	}
 
