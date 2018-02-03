@@ -1,0 +1,47 @@
+#!/bin/bash
+KEY_ALIAS=alias/coffeebot
+
+if ! command -v pip >/dev/null; then
+    echo "Coffeebot requires pip."
+fi
+if ! command -v make >/dev/null; then
+    echo "Coffeebot requires make."
+fi
+if ! command -v jq >/dev/null; then
+    echo "Coffeebot requires jq."
+fi
+
+set -ex
+pip install -r requirements.txt
+
+make kms
+
+aws kms describe-key --key-id $KEY_ALIAS >/dev/null
+
+set +ex
+if [ $? -ne "0" ]; then
+    echo "the $KEY_ALIAS key could not be found"
+    exit 1
+fi
+
+printf '\n\n'
+printf 'Rocket.Chat URL: '
+read url
+printf 'Rocket.Chat Username: '
+read username
+printf 'Rocket.Chat Password: '
+read password
+
+set -e
+echo "Encrypting username and password.."
+username=`aws kms encrypt --key-id $KEY_ALIAS --plaintext "$username" | jq -r '.CiphertextBlob'`
+password=`aws kms encrypt --key-id $KEY_ALIAS --plaintext "$password" | jq -r '.CiphertextBlob'`
+
+echo "Writing credentials file"
+CREDS_TEMPLATE="rocket_chat:
+  url: '$url'
+  username: '$username'
+  password: '$password'
+"
+
+echo "$CREDS_TEMPLATE" > config/creds.yaml

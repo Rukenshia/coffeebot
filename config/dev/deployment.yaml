@@ -1,4 +1,4 @@
 template_path: templates/deployment.yaml
 
 parameters:
-  BucketName: coffeebot-artifacts
+  BucketName: {{var.project_code}}-artifacts
