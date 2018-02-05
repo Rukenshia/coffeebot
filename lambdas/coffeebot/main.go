@@ -70,9 +70,8 @@ func Handler(event events.CloudWatchEvent) (interface{}, error) {
 		firstUser := users[first]
 		secondUser := users[pb[idx]]
 
-		if firstUser.Username == "jan" || secondUser.Username == "jan" {
-			SendCoffeeInvitation(rc, firstUser, secondUser)
-		}
+		rlog.Debugf("Sending messages to %s and %s", firstUser.Username, secondUser.Username)
+		SendCoffeeInvitation(rc, firstUser, secondUser)
 	}
 
 	return nil, nil

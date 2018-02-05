@@ -62,6 +62,7 @@ Resources:
         S3Bucket: !Ref ArtifactBucket
         S3Key: !Ref CoffeebotArtifact
       Runtime: "go1.x"
+      Timeout: 60
       Environment:
         Variables:
           RocketChatUrl: !Ref RocketChatUrl

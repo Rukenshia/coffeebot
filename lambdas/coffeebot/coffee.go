@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"math/rand"
 	"text/template"
@@ -23,7 +24,7 @@ func SendCoffeeInvitation(rc *rocketchat.Client, first, second rocketchat.User) 
 	m2 := generateMessage(second, first)
 
 	if err := rc.Chat.PostMessage(rocketchat.Message{
-		Channel: "@jan",
+		Channel: fmt.Sprintf("@%s", first.Username),
 		Text:    m1,
 		Emoji:   ":coffee:",
 	}); err != nil {
@@ -31,7 +32,7 @@ func SendCoffeeInvitation(rc *rocketchat.Client, first, second rocketchat.User) 
 	}
 
 	return rc.Chat.PostMessage(rocketchat.Message{
-		Channel: "@jan",
+		Channel: fmt.Sprintf("@%s", second.Username),
 		Text:    m2,
 		Emoji:   ":coffee:",
 	})
