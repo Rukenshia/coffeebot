@@ -42,6 +42,7 @@ CREDS_TEMPLATE="rocket_chat:
   url: '$url'
   username: '$username'
   password: '$password'
+  blacklist: ''
 "
 
 echo "$CREDS_TEMPLATE" > config/creds.yaml
