@@ -14,3 +14,4 @@ parameters:
   RocketChatUrl: {{var.rocket_chat.url}}
   RocketChatUsername: {{var.rocket_chat.username}}
   RocketChatPassword: {{var.rocket_chat.password}}
+  RocketChatBlacklist: {{var.rocket_chat.blacklist}}

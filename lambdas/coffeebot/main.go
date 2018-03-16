@@ -28,6 +28,8 @@ func Handler(event events.CloudWatchEvent) (interface{}, error) {
 		return nil, err
 	}
 
+	blacklist := strings.Split(os.Getenv("RocketChatBlacklist"), ",")
+
 	rc := rocketchat.NewClient(os.Getenv("RocketChatUrl"))
 
 	if err := rc.Login(username, password); err != nil {
@@ -40,6 +42,15 @@ func Handler(event events.CloudWatchEvent) (interface{}, error) {
 		rlog.Error(err)
 		return nil, err
 	}
+	users = filter(users, func(u rocketchat.User) bool {
+		// Remove users that are blacklisted
+		for _, b := range blacklist {
+			if u.Username == b {
+				return false
+			}
+		}
+		return true
+	})
 	users = filter(users, func(u rocketchat.User) bool {
 		botIdx := strings.Index(u.Username, "bot")
 		return u.Active == true && botIdx != 0 && botIdx != len(u.Username)-3
