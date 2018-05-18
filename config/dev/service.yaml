@@ -15,3 +15,6 @@ parameters:
   RocketChatUsername: {{var.rocket_chat.username}}
   RocketChatPassword: {{var.rocket_chat.password}}
   RocketChatBlacklist: {{var.rocket_chat.blacklist}}
+
+  SilentMode: "true"
+  LogLevel: debug

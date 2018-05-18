@@ -12,10 +12,32 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func init() {
+	level := os.Getenv("LogLevel")
+	switch level {
+	case "panic":
+		log.SetLevel(log.PanicLevel)
+	case "fatal":
+		log.SetLevel(log.FatalLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	default:
+		log.SetLevel(log.ErrorLevel)
+	}
+}
+
 // Handler handles the Amazon API Gateway Event
 func Handler(event events.CloudWatchEvent) (interface{}, error) {
+	silentMode := os.Getenv("SilentMode") == "true"
+
 	rlog := log.WithField("EventId", event.ID).WithField("RocketChatUrl", os.Getenv("RocketChatUrl"))
-	rlog.Infof("Handling CloudWatch event")
+	rlog.WithField("silent", silentMode).Infof("Handling CloudWatch event")
 
 	username, err := DecryptEnvVar("", "RocketChatUsername")
 	if err != nil {
@@ -55,6 +77,19 @@ func Handler(event events.CloudWatchEvent) (interface{}, error) {
 		botIdx := strings.Index(u.Username, "bot")
 		return u.Active == true && botIdx != 0 && botIdx != len(u.Username)-3
 	})
+	users = filter(users, func(u rocketchat.User) bool {
+		if u.Username == "" {
+			rlog.WithField("user", u).Warn("Found empty username")
+			return false
+		}
+		return true
+	})
+
+	var usernames []string
+	for _, user := range users {
+		usernames = append(usernames, user.Username)
+	}
+	rlog.WithField("users", usernames).Debugf("Determined eligible users")
 
 	if len(users) == 0 {
 		rlog.Info("Not assigning any pairings, no users")
@@ -81,15 +116,18 @@ func Handler(event events.CloudWatchEvent) (interface{}, error) {
 		firstUser := users[first]
 		secondUser := users[pb[idx]]
 
-		rlog.Debugf("Sending messages to %s and %s", firstUser.Username, secondUser.Username)
-		SendCoffeeInvitation(rc, firstUser, secondUser)
+		if silentMode {
+			rlog.Debugf("Would send message to %s and %s now", firstUser.Username, secondUser.Username)
+		} else {
+			rlog.Debugf("Sending messages to %s and %s", firstUser.Username, secondUser.Username)
+			SendCoffeeInvitation(rc, firstUser, secondUser)
+		}
 	}
 
 	return nil, nil
 }
 
 func main() {
-	log.SetLevel(log.DebugLevel)
 	lambda.Start(Handler)
 }
 

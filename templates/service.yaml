@@ -19,6 +19,16 @@ Parameters:
   RocketChatPassword:
     Type: String
     Description: Password to the Rocket.Chat instance
+  RocketChatBlacklist:
+    Type: String
+    Description: A comma separated list of blacklisted users (should not be paired)
+    Default: ''
+  SilentMode:
+    Type: String
+    Description: Set to true if messages should not be sent
+  LogLevel:
+    Type: String
+    Description: Can be debug, info, warn, error, fatal, panic
 
 Resources:
   CoffeebotLambdaRole:
@@ -68,6 +78,9 @@ Resources:
           RocketChatUrl: !Ref RocketChatUrl
           RocketChatUsername: !Ref RocketChatUsername
           RocketChatPassword: !Ref RocketChatPassword
+          RocketChatBlacklist: !Ref RocketChatBlacklist
+          SilentMode: !Ref SilentMode
+          LogLevel: !Ref LogLevel
 
   CoffeebotEvent:
     Type: AWS::Events::Rule
