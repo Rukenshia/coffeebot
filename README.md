@@ -1,10 +1,10 @@
 # Coffeebot
 
-This bot pairs all Rocket.Chat users of a server every Monday for a cup of coffee, lunch or whatever you feel like.
+This bot helps users to find someone to have a cup of coffee with via RocketChat. It encourages social activity within a group of people, e.g. coworkers. All users of a server are paired every Monday and get another person proposed. 
 
 ## Lambda
 
-The lambda is written in Go, hence Go1.9 is required.
+The lambda is written in Go, hence Go1.9 is required. The infrastructure needs to be deployed on AWS.
 
 ## Deployment
 
